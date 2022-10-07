@@ -1,0 +1,47 @@
+---
+title: "Project 1"
+author: "Elizabeth Pauley"
+date: "10/7/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lubridate)
+library(Hmisc) #for data descriptions
+```
+
+read in data
+```{r}
+rats_raw<-read_csv("Rat_sightings.csv",  na = c("", "NA", "N/A"))
+rats_clean <- rats_raw %>%
+  rename(created_date = `Created Date`,
+         location_type = `Location Type`,
+         borough = Borough) %>%
+  mutate(created_date = mdy_hms(created_date)) %>%
+  mutate(sighting_year = year(created_date),
+         sighting_month = month(created_date),
+         sighting_day = day(created_date),
+         sighting_weekday = wday(created_date, label = TRUE, abbr = FALSE)) %>%
+  filter(borough != "Unspecified")
+```
+
+```{r}
+describe(rats_clean)
+```
+
+```{r, fig.width=12, fig.height=12}
+#location_type
+rats_clean %>%
+  count(location_type,  sighting_year)
+
+rats_by_location <- rats_clean %>%
+  count(location_type,  sighting_year)
+ggplot(data = rats_by_location,
+       mapping = aes(x = sighting_year, y = n)) +
+  geom_line(color="blue") +facet_wrap(~location_type)+
+  labs(x="Year", y="Count of rats", title="Count of rats")+
+  theme_bw()+ theme(plot.title = element_text(size=22))+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
