@@ -64,6 +64,7 @@ df_by_month <- rats_clean %>%
 
 c <- ggplot(data = df_by_month, mapping = aes(x = sighting_month, y= total)) +
   geom_col(width = 0.75) +
+  scale_x_continuous(breaks=1:12) +
   labs(x = "Month", y = "Total number of sightings")
 
 print(c)
