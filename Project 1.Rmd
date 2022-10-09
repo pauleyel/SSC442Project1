@@ -45,3 +45,27 @@ ggplot(data = rats_by_location,
   theme_bw()+ theme(plot.title = element_text(size=22))+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
+ATA - PLOTS OF SIGHTINGS BY YEAR AND MONTH
+```{r}
+
+df_by_year <- rats_clean %>%
+  group_by(sighting_year) %>%
+  summarise(total = sum(sighting_year))
+
+
+p <- ggplot(data = df_by_year, mapping = aes(x = sighting_year, y= total)) +
+  geom_col(width = 0.75) +
+  labs(x = "Year", y = "Total number of sightings")
+print(p)
+
+df_by_month <- rats_clean %>%
+  group_by(sighting_month) %>%
+  summarise(total = sum(sighting_month))
+
+c <- ggplot(data = df_by_month, mapping = aes(x = sighting_month, y= total)) +
+  geom_col(width = 0.75) +
+  labs(x = "Month", y = "Total number of sightings")
+
+print(c)
+
+```
