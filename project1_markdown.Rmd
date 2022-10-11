@@ -1,0 +1,23 @@
+---
+title: "project1"
+author: Ata Algan, Elizabeth Pauley, CJ Sivak
+output: pdf_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Memo to the Mayor of the City of New York Regarding Rat Sightings
+### Introduction
+
+Through statistical analysis, we were tasked to investigate past data regarding rat sightings throughout the City of New York in order to find trends that may be of use to city level policy. We found the spread of rat sightings over months to be of interest, as well as segregating the data by borough to allow for efficient targeting of resources to prevent rat populations from growing. 
+
+### Rat Sightings Across Boroughs by Month
+
+```{r bymonth}
+
+```
+
+The chart above shows that all of the boroughs display similar patterns of rat sightings over the months of the year. Rat sightings were higher in the summer months and lowest in the winter months. The raw counts of rat sightings for Brooklyn were the highest, but we believe that this can be explained by the borough having the highest population.
