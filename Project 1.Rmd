@@ -1,6 +1,6 @@
 ---
 title: "Project 1"
-author: "Elizabeth Pauley"
+author: "Elizabeth Pauley, CJ Sivak, Ata Algan"
 date: "10/7/2022"
 output: html_document
 ---
@@ -12,7 +12,7 @@ library(lubridate)
 library(Hmisc) #for data descriptions
 ```
 
-read in data
+Read in data
 ```{r}
 rats_raw<-read_csv("Rat_sightings.csv",  na = c("", "NA", "N/A"))
 rats_clean <- rats_raw %>%
@@ -24,50 +24,112 @@ rats_clean <- rats_raw %>%
          sighting_month = month(created_date),
          sighting_day = day(created_date),
          sighting_weekday = wday(created_date, label = TRUE, abbr = FALSE)) %>%
-  filter(borough != "Unspecified")
+  filter(borough != "Unspecified")%>%
+  filter(!is.na(location_type))
 ```
 
+
+Percentage change from previous year
 ```{r}
-describe(rats_clean)
-```
+rats_by_year <- rats_clean %>%
+  count(sighting_year)
 
-```{r, fig.width=12, fig.height=12}
-#location_type
-rats_clean %>%
-  count(location_type,  sighting_year)
+changes=rats_by_year %>%
+  mutate(pct_change =
+           (n/lag(n) - 1) * 100)
 
-rats_by_location <- rats_clean %>%
-  count(location_type,  sighting_year)
-ggplot(data = rats_by_location,
+x=ggplot(data = rats_by_year,
        mapping = aes(x = sighting_year, y = n)) +
-  geom_line(color="blue") +facet_wrap(~location_type)+
-  labs(x="Year", y="Count of rats", title="Count of rats")+
-  theme_bw()+ theme(plot.title = element_text(size=22))+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  geom_line(color="orange") + labs(x="Year", y= "Count", title="Count of Rats in NYC by Year")+
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10))+theme_bw()
+
+
+y=ggplot(data = changes,
+       mapping = aes(x = sighting_year, y = pct_change)) +
+  geom_line(color="orange") + geom_hline(yintercept = 0)+
+  labs(x="Year", y= "Percent Change", title="Percentage Change of Rat Sightings by Year")+
+  theme_bw()+scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
+
+
+par(mfrow=c(1,2))
+x
+y
 ```
 
-ATA - PLOTS OF SIGHTINGS BY YEAR AND MONTH
+Percent change by month
 ```{r}
+rats_by_month <- rats_clean %>%
+  group_by(sighting_month)%>%
+  summarise(total=sum(sighting_month))
 
-df_by_year <- rats_clean %>%
-  group_by(sighting_year) %>%
-  summarise(total = sum(sighting_year))
+changes_by_month=rats_by_month %>%
+  mutate(pct_change =
+           (total/lag(total) - 1) * 100)
 
-
-p <- ggplot(data = df_by_year, mapping = aes(x = sighting_year, y= total)) +
-  scale_x_continuous(breaks=2010:2020) +
-  geom_col(width = 0.75) +
-  labs(x = "Year", y = "Total number of sightings")
-print(p)
-
-df_by_month <- rats_clean %>%
-  group_by(sighting_month) %>%
-  summarise(total = sum(sighting_month))
-
-c <- ggplot(data = df_by_month, mapping = aes(x = sighting_month, y= total)) +
-  geom_col(width = 0.75) +
-  scale_x_continuous(breaks=1:12) +
-  labs(x = "Month", y = "Total number of sightings")
-
-print(c)
+y=ggplot(data = changes_by_month,
+       mapping = aes(x = sighting_month, y = pct_change)) +
+  geom_line(color="orange") + geom_hline(yintercept = 0)+
+  labs(x="Month", y= "Percent Change", title="Percentage Change of Rat Sightings by Month")+
+  theme_bw()+scale_x_continuous(breaks = scales::pretty_breaks(n = 12))
+y
 
 ```
+
+
+By bourough
+```{r}
+color_blind_friendly_cols <-
+  c("#D55E00","#F0E442", "#0072B2", "#009E73", "#CC79A7")
+
+rats_by_borough <- rats_clean %>%
+  group_by(borough,sighting_month)%>%
+  summarise(total=sum(sighting_month))
+
+changes_by_borough=rats_by_borough %>%
+  mutate(pct_change =
+           ((total)-lag(total))/(lag(total))*100)
+
+p=ggplot(data = changes_by_borough,
+       mapping = aes(x = borough, y = pct_change)) +
+  geom_bar(stat="identity") + geom_hline(yintercept = 0, color="red")+
+  labs(x="Month", y= "Percent Change", title="Percentage Change of Rat Sightings by Month")+
+  theme_bw()+facet_grid(~sighting_month)
+#+scale_x_continuous(breaks = scales::pretty_breaks(n = 12))
+p
+
+p2=ggplot(data = rats_by_borough,
+       mapping = aes(x = sighting_month, y = total, color=borough)) +
+  geom_line() + geom_hline(yintercept = 0)+
+  labs(x="Month", y= "Count", title="Total Rat Sightings by Month")+
+  theme_bw()+scale_x_continuous(breaks = scales::pretty_breaks(n = 12))
+p2
+```
+
+
+Highest by month- September
+Lowest by month- January 
+```{r, fig.width=10}
+#one visualization
+#colorblind pallete
+#January/Feb tick marks
+#change legend title
+x=ggplot(data = rats_by_borough,
+       mapping = aes(x = sighting_month, y = total, fill=borough)) +
+  geom_bar(position='dodge',stat="identity", color='black') + labs(x="Month", y= "Count", title="Count of Rats in NYC by Month")
+x+ scale_fill_manual(values=color_blind_friendly_cols)+scale_x_continuous(breaks = scales::pretty_breaks(n = 12))+theme_bw()+
+  theme(legend.position = c(0.08, 0.8))+theme(legend.key.size = unit(1.5, 'cm'))+
+  theme(legend.text = element_text(size=15))+theme(legend.title = element_text(size=30))+
+   guides(fill=guide_legend(title="Borough"))+
+  theme(legend.background = element_rect(colour = 'black', fill = 'white', linetype='solid'))
+```
+
+
+## Part 2: Data Hunting
+# First dataset: Business openings and closures in the 3 largest cities in America the past 30 years
+```{r}
+businesses<-read_csv(" business.csv")
+head(businesses)
+```
+Link for data: https://data.census.gov/cedsci/table?t=Business%20Starts%20and%20Closures&g=310XX00US16980,31080,35620 
+I found data from the US Census. I'm particularly interested in economics as an Econ student, and I am also from Chicago. So, I wanted to combine my two interests. This data goes as far back as 1978 and contains 3 metropolitan areas (Chicago, New York, and Los Angeles). I think it will be particularly interesting and telling about each city the number of businesses opening and closing, especially in time of the recession in 2008 and covid in 2020. It could be neat to look at what cities bounce back faster than others, as well. 
+
