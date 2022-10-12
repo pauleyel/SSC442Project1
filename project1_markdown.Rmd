@@ -1,5 +1,5 @@
 ---
-title: "project1"
+title: "Project1"
 author: Ata Algan, Elizabeth Pauley, CJ Sivak
 output: pdf_document
 date: "`r Sys.Date()`"
@@ -7,6 +7,8 @@ date: "`r Sys.Date()`"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(lubridate)
 ```
 
 ## Memo to the Mayor of the City of New York Regarding Rat Sightings
@@ -16,8 +18,68 @@ Through statistical analysis, we were tasked to investigate past data regarding 
 
 ### Rat Sightings Across Boroughs by Month
 
-```{r bymonth}
+```{r bymonth, message=FALSE, warning=FALSE}
+#reading in data
+rats_raw<-read_csv("Rat_sightings.csv",  na = c("", "NA", "N/A"))
+rats_clean <- rats_raw %>%
+  rename(created_date = `Created Date`,
+         location_type = `Location Type`,
+         borough = Borough) %>%
+  mutate(created_date = mdy_hms(created_date)) %>%
+  mutate(sighting_year = year(created_date),
+         sighting_month = month(created_date),
+         sighting_day = day(created_date),
+         sighting_weekday = wday(created_date, label = TRUE, abbr = FALSE)) %>%
+  filter(borough != "Unspecified")%>%
+  filter(!is.na(location_type))
 
+color_blind_friendly_cols <-
+  c("#D55E00","#F0E442", "#0072B2", "#009E73", "#CC79A7")
+
+rats_by_borough <- rats_clean %>%
+  group_by(borough,sighting_month)%>%
+  summarise(total=sum(sighting_month))
+
+changes_by_borough=rats_by_borough %>%
+  mutate(pct_change =
+           ((total)-lag(total))/(lag(total))*100)
 ```
 
-The chart above shows that all of the boroughs display similar patterns of rat sightings over the months of the year. Rat sightings were higher in the summer months and lowest in the winter months. The raw counts of rat sightings for Brooklyn were the highest, but we believe that this can be explained by the borough having the highest population.
+```{r, fig.width=14, fig.height=8}
+x=ggplot(data = rats_by_borough,
+       mapping = aes(x = sighting_month, y = total, fill=borough)) +
+  geom_bar(position='dodge',stat="identity", color='black') + labs(x="Month", y= "Count", title="Count of Rats in NYC by Month")
+x+ scale_fill_manual(values=color_blind_friendly_cols)+theme_bw()+
+  theme(legend.position = c(0.1, 0.8))+theme(legend.key.size = unit(0.4, 'cm'))+
+  theme(legend.text = element_text(size=10))+theme(legend.title = element_text(size=20))+
+   guides(fill=guide_legend(title="Borough"))+
+  theme(legend.background = element_rect(colour = 'black', fill = 'white', linetype='solid'))+
+  theme(axis.text=element_text(size=15),axis.title=element_text(size=25,face="bold"))+ 
+  theme(plot.title = element_text(size=30, face='bold'))+scale_x_discrete(limits=c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))+
+  theme(axis.text.x = element_text(angle = 40,vjust = 0.9))
+```
+
+
+The visual above shows that all of the boroughs display similar patterns of rat sightings over the months of the year. Typically, as one burrow sees an increase in rat sightings, so does every other burrow. Rat sightings were higher in the summer months (August and September) and lowest in the winter months (January and February). The raw counts of rat sightings for Brooklyn were the highest, but we believe that this can be explained by the borough having the highest population. To explore this more, we visualize the percent change of rat sightings for each burrow by month below. 
+
+```{r,fig.width=14, fig.height=8}
+p=ggplot(data = changes_by_borough,
+       mapping = aes(x = borough, y = pct_change, fill=borough)) +
+  geom_bar(stat="identity") + geom_hline(yintercept = 0, color="black", lwd=2)+
+  labs(x="Month", y= "Percent Change", title="Percentage Change of Rat Sightings by Month")+
+  theme_bw()+facet_grid(~sighting_month)+theme(axis.text=element_text(size=15),axis.title=element_text(size=25,face="bold"))+
+  theme(plot.title = element_text(size=30, face='bold'))+theme(axis.text.x = element_text(angle = 90,vjust = 0.9))+
+    theme(legend.position = c(0.9, 0.8))+theme(legend.key.size = unit(0.2, 'cm'))+
+  theme(legend.text = element_text(size=10))+theme(legend.title = element_text(size=20))+
+   guides(fill=guide_legend(title="Borough"))+
+  theme(legend.background = element_rect(colour = 'black', fill = 'white', linetype='solid'))
+p
+
+```
+Can someone figure out how to take off the x axis ticks here? We don't need them because of the legend. I would rather have labels here that say Januray, February, etc.
+
+## Part 2: Data Hunting
+# First dataset: Business openings and closures in the 3 largest cities in America the past 30 years
+Link for data: https://data.census.gov/cedsci/table?t=Business%20Starts%20and%20Closures&g=310XX00US16980,31080,35620 
+
+I found data from the US Census about business openings and closures. This data goes as far back as 1978 and contains 3 metropolitan areas (Chicago, New York, and Los Angeles). I think it will be particularly interesting and telling about each city the number of businesses opening and closing, especially in time of the recession in 2008 and covid in 2020. It could be neat to look at what cities bounce back faster than others, as well. As an economics student, I find particular interest in this dataset. 
