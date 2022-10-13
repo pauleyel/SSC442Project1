@@ -86,6 +86,7 @@ Link for data: https://data.census.gov/cedsci/table?t=Business%20Starts%20and%20
 
 I found data from the US Census about business openings and closures. This data goes as far back as 1978 and contains 3 metropolitan areas (Chicago, New York, and Los Angeles). I think it will be particularly interesting and telling about each city the number of businesses opening and closing, especially in time of the recession in 2008 and covid in 2020. It could be neat to look at what cities bounce back faster than others, as well. As an economics student, I find particular interest in this dataset. 
 
+# Second dataset: FBI's National Instant Criminal Background Check System
 Link for data: https://github.com/BuzzFeedNews/nics-firearm-background-checks/tree/master/data
 
 I have chosen this dataset because I found it interesting to have a detailed dataset of firearm background checks gathered by a government identity, the FBI. Gun control in generally has become an important issue both in politics and social life. Therefore, the popularity of the debate on gun reforms contributed to my interest in this dataset. Another aspect that I like is the applicability of the data to policy proposals. It covers every state in the nation and so it can give us a general understanding of the country. Furthermore, the type of gun was listed on the dataset too, which can explain if certain guns follow a different pattern. Overall, I think gun control is a critical issue of the U.S. affecting everyone in some way or another.
