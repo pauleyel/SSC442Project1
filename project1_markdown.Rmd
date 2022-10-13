@@ -62,19 +62,21 @@ x+ scale_fill_manual(values=color_blind_friendly_cols)+theme_bw()+
 
 The visual above shows that all of the boroughs display similar patterns of rat sightings over the months of the year. Typically, as one burrow sees an increase in rat sightings, so does every other burrow. Rat sightings were higher in the summer months (August and September) and lowest in the winter months (January and February). The raw counts of rat sightings for Brooklyn were the highest, but we believe that this can be explained by the borough having the highest population. To explore this more, we visualize the percent change of rat sightings for each burrow by month below. 
 
-```{r,fig.width=14, fig.height=8}
+```{r,fig.width=14, fig.height=8, warning=FALSE}
+new_labels <- c("1" = "January", "2" = "February", "3" = "March", "4" = "April","5" = "May", "6" = "June","7" = "July", "8" = "August","9" = "September", "10" = "October","11" = "November", "12" = "December" )
+
 p=ggplot(data = changes_by_borough,
        mapping = aes(x = borough, y = pct_change, fill=borough)) +
   geom_bar(stat="identity") + geom_hline(yintercept = 0, color="black", lwd=2)+
   labs(x="Month", y= "Percent Change", title="Percentage Change of Rat Sightings by Month")+
-  theme_bw()+facet_grid(~sighting_month)+theme(axis.text=element_text(size=15),axis.title=element_text(size=25,face="bold"))+
+  theme_bw()+facet_grid(~sighting_month, labeller = labeller(sighting_month = new_labels))+theme(axis.text=element_text(size=15),axis.title=element_text(size=25,face="bold"))+
   theme(plot.title = element_text(size=30, face='bold'))+theme(axis.text.x = element_text(angle = 90,vjust = 0.9))+
-    theme(legend.position = c(0.9, 0.8))+theme(legend.key.size = unit(0.2, 'cm'))+
+    theme(legend.position = c(0.9, 0.8))+theme(legend.key.size = unit(0.4, 'cm'))+
   theme(legend.text = element_text(size=10))+theme(legend.title = element_text(size=20))+
    guides(fill=guide_legend(title="Borough"))+
   theme(legend.background = element_rect(colour = 'black', fill = 'white', linetype='solid'))
-p
 
+p + scale_fill_manual(values=color_blind_friendly_cols) + theme(axis.text.x = element_blank())
 ```
 Can someone figure out how to take off the x axis ticks here? We don't need them because of the legend. I would rather have labels here that say Januray, February, etc.
 
